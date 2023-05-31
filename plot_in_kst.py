@@ -61,7 +61,7 @@ def main():
         return
 
     with open(args.file, 'r', encoding="UTF-8") as file:
-        data = tail(file, args.samples + 30) # Add some extra lines for trace metadata and newlines after trace dump
+        data = tail(file, int(args.samples) + 30) # Add some extra lines for trace metadata and newlines after trace dump
 
     # Find index where trace dump occurs
     prescaler_start_index = -1
@@ -80,7 +80,7 @@ def main():
     if int(args.channels) < 0:
         args.channels = len(channel_names) - channel_names.count("unknown")
 
-    samples = data[prescaler_start_index + 3: prescaler_start_index + 3 + args.samples]
+    samples = data[prescaler_start_index + 3: prescaler_start_index + 3 + int(args.samples)]
 
     print(f"Prescaler: {prescaler}\nTrigger: {trigger}\nChannels: {channels}\n")
 
