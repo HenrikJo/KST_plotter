@@ -97,7 +97,7 @@ def main():
         channels += ['-y', str(index+2)]
         index += 1
 
-    command = ['kst2', tempfilename, '-n', str(args.samples)] + channels
+    command = ['kst2', tempfilename, '-n', str(args.samples), '-m', "3"] + channels
 
     print(command)
     with subprocess.Popen(command, stdout=subprocess.PIPE) as proc:
