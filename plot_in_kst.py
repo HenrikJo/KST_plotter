@@ -9,6 +9,7 @@ It fixes so the timestamps are correct
 
 import argparse
 import os
+import shutil
 import subprocess
 
 
@@ -45,6 +46,7 @@ def main():
     parser.add_argument("--channels", "-c")
     parser.add_argument("--file", "-f")
     parser.add_argument("--sampling_freq", "-s")
+    parser.add_argument("--save_raw", "-R")
     args = parser.parse_args()
 
     if not args.samples:
@@ -96,6 +98,28 @@ def main():
         channels += ['--ylabel', " "]
         channels += ['-y', str(index+2)]
         index += 1
+
+    if (args.save_raw):
+        # Make sure file does not already exist
+        destination = args.save_raw
+        if (os.path.isfile(destination)):
+            number = 1
+            if "." in destination:
+                full_name = destination.split(".")[0] + "_" + str(number) + "." + destination.split(".")[1]
+                while os.path.isfile(full_name):
+                    number += 1
+                    full_name = destination.split(".")[0] + "_" + str(number) + "." + destination.split(".")[1]
+                destination = full_name
+            else:
+                full_name = destination + "_"  + str(number)
+                while os.path.isfile(full_name):
+                    number += 1
+                    full_name = destination + "_" + str(number)
+                destination = full_name
+
+        os.path.isfile(os.getcwd() + "/" + destination)
+
+        shutil.copyfile(tempfilename, destination)
 
     command = ['kst2', tempfilename, '-n', str(args.samples), '-m', "3"] + channels
 
