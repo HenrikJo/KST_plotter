@@ -39,6 +39,28 @@ def tail(file, lines=1, _buffer=4098):
 
     return lines_found[-lines:]
 
+def save_raw(output_filename, tempfilename):
+    # Make sure file does not already exist
+    destination = output_filename
+    if (os.path.isfile(destination)):
+        number = 1
+        if "." in destination:
+            full_name = destination.split(".")[0] + "_" + str(number) + "." + destination.split(".")[1]
+            while os.path.isfile(full_name):
+                number += 1
+                full_name = destination.split(".")[0] + "_" + str(number) + "." + destination.split(".")[1]
+            destination = full_name
+        else:
+            full_name = destination + "_"  + str(number)
+            while os.path.isfile(full_name):
+                number += 1
+                full_name = destination + "_" + str(number)
+            destination = full_name
+
+    os.path.isfile(os.getcwd() + "/" + destination)
+
+    shutil.copyfile(tempfilename, destination)
+
 def main():
     """ Start function to plot in kst """
     parser = argparse.ArgumentParser(description="Automatically plot file in kst")
@@ -46,7 +68,7 @@ def main():
     parser.add_argument("--channels", "-c")
     parser.add_argument("--file", "-f")
     parser.add_argument("--sampling_freq", "-s")
-    parser.add_argument("--save_raw", "-R")
+    parser.add_argument("--save_raw", "-R", action='store_true', help="Save raw values to filename. If no name set, save to the same as the input")
     args = parser.parse_args()
 
     if not args.samples:
@@ -100,26 +122,13 @@ def main():
         index += 1
 
     if (args.save_raw):
-        # Make sure file does not already exist
-        destination = args.save_raw
-        if (os.path.isfile(destination)):
-            number = 1
-            if "." in destination:
-                full_name = destination.split(".")[0] + "_" + str(number) + "." + destination.split(".")[1]
-                while os.path.isfile(full_name):
-                    number += 1
-                    full_name = destination.split(".")[0] + "_" + str(number) + "." + destination.split(".")[1]
-                destination = full_name
+        if (args.save_raw == True):
+            if ("." in args.file):
+                save_raw(args.file.split(".")[0] + ".raw", tempfilename)
             else:
-                full_name = destination + "_"  + str(number)
-                while os.path.isfile(full_name):
-                    number += 1
-                    full_name = destination + "_" + str(number)
-                destination = full_name
-
-        os.path.isfile(os.getcwd() + "/" + destination)
-
-        shutil.copyfile(tempfilename, destination)
+                save_raw(args.file + ".raw", tempfilename)
+        else:
+            save_raw(args.save_raw)
 
     command = ['kst2', tempfilename, '-n', str(args.samples), '-m', "3"] + channels
 
