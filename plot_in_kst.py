@@ -69,6 +69,7 @@ def main():
     parser.add_argument("--file", "-f")
     parser.add_argument("--sampling_freq", "-s")
     parser.add_argument("--save_raw", "-R", action='store_true', help="Save raw values to filename. If no name set, save to the same as the input")
+    parser.add_argument("--save_pdf", "-P", action='store_true', help="Save pdf image")
     args = parser.parse_args()
 
     if not args.samples:
@@ -131,6 +132,15 @@ def main():
             save_raw(args.save_raw)
 
     command = ['kst2', tempfilename, '-n', str(args.samples), '-m', "3"] + channels
+
+    if (args.save_pdf):
+        if (args.save_pdf == True):
+            if ("." in args.file):
+                command += ["--print", args.file.split(".")[0] + ".pdf"]
+            else:
+                command += ["--print", args.file + ".pdf"]
+        else:
+            command += ["--print", args.save_pdf]
 
     print(command)
     with subprocess.Popen(command, stdout=subprocess.PIPE) as proc:
