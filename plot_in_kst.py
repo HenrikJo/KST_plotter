@@ -70,6 +70,7 @@ def main():
     parser.add_argument("--sampling_freq", "-s")
     parser.add_argument("--save_raw", "-R", action='store_true', help="Save raw values to filename. If no name set, save to the same as the input")
     parser.add_argument("--save_pdf", "-P", action='store_true', help="Save pdf image")
+    parser.add_argument("--verbose", "-V", action='store_true', help="Verbose output")
     args = parser.parse_args()
 
     if not args.samples:
@@ -137,13 +138,18 @@ def main():
         path, file = os.path.split(args.file)
         if (args.save_pdf == True):
             if ("." in file):
+                if (args.verbose):
+                    print(path + "/" + file.split(".")[0] + ".pdf")
                 command += ["--print", path + "/" + file.split(".")[0] + ".pdf"]
             else:
+                if (args.verbose):
+                    print(path + "/" + file + ".pdf")
                 command += ["--print", path + "/" + file + ".pdf"]
         else:
             command += ["--print", args.save_pdf]
 
-    print(command)
+    if (args.verbose):
+        print(command)
     with subprocess.Popen(command, stdout=subprocess.PIPE) as proc:
         if proc.returncode:
             print(proc)
