@@ -134,11 +134,12 @@ def main():
     command = ['kst2', tempfilename, '-n', str(args.samples), '-m', "3"] + channels
 
     if (args.save_pdf):
+        path, file = os.path.split(args.file)
         if (args.save_pdf == True):
-            if ("." in args.file):
-                command += ["--print", args.file.split(".")[0] + ".pdf"]
+            if ("." in file):
+                command += ["--print", path + "/" + file.split(".")[0] + ".pdf"]
             else:
-                command += ["--print", args.file + ".pdf"]
+                command += ["--print", path + "/" + file + ".pdf"]
         else:
             command += ["--print", args.save_pdf]
 
