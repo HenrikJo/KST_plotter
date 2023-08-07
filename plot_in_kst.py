@@ -71,7 +71,11 @@ def main():
     parser.add_argument("--save_raw", "-R", action='store_true', help="Save raw values to filename. If no name set, save to the same as the input")
     parser.add_argument("--save_pdf", "-P", action='store_true', help="Save pdf image")
     parser.add_argument("--verbose", "-V", action='store_true', help="Verbose output")
+    parser.add_argument("--rm_prefix", help="Remove prefix from dump, \"eg BD: \"")
     args = parser.parse_args()
+
+    if args.rm_prefix is None:
+        args.rm_prefix = ""
 
     if not args.samples:
         args.samples = 1024
@@ -99,14 +103,20 @@ def main():
         print("Failed to find trace dump start")
         exit()
 
-    prescaler = int(data[prescaler_start_index].strip().replace("trace prescaler ", ""))
-    trigger = data[prescaler_start_index + 1].strip()
-    channels = data[prescaler_start_index + 2].strip()
-    channel_names = channels.split(" ")
+    prescaler = int(data[prescaler_start_index].strip().replace(args.rm_prefix+"trace prescaler ", ""))
+    trigger = data[prescaler_start_index + 1].strip().replace(args.rm_prefix, "")
+    channels = data[prescaler_start_index + 2].strip().replace(args.rm_prefix, "")
+    channel_names = channels.replace(args.rm_prefix, "").split(" ")
     if int(args.channels) < 0:
         args.channels = len(channel_names) - channel_names.count("unknown")
 
     samples = data[prescaler_start_index + 3: prescaler_start_index + 3 + int(args.samples)]
+
+    samples_no_prefix = []
+    for index, line in enumerate(samples):
+        samples_no_prefix.append(line.replace(args.rm_prefix, ""))
+
+    samples = samples_no_prefix
 
     print(f"Prescaler: {prescaler}\nTrigger: {trigger}\nChannels: {channels}\n")
 
