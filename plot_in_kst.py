@@ -116,6 +116,8 @@ def main():
     for index, line in enumerate(samples):
         samples_no_prefix.append(line.replace(args.rm_prefix, ""))
 
+
+
     samples = samples_no_prefix
 
     print(f"Prescaler: {prescaler}\nTrigger: {trigger}\nChannels: {channels}\n")
@@ -124,7 +126,8 @@ def main():
 
     with open(tempfilename, "w", encoding="UTF-8") as file:
         for index, line in enumerate(samples):
-            file.write(str(index * prescaler / int(args.sampling_freq)) + " " + line)
+            if line != '\n':
+                file.write(str(index * prescaler / int(args.sampling_freq)) + " " + line)
 
     channels = ['-x', '1']
     for index in range(0, int(args.channels)):
