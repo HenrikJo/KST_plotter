@@ -72,6 +72,8 @@ def main():
     parser.add_argument("--save_pdf", "-P", action='store_true', help="Save pdf image")
     parser.add_argument("--verbose", "-V", action='store_true', help="Verbose output")
     parser.add_argument("--rm_prefix", help="Remove prefix from dump, \"eg BD: \"")
+    parser.add_argument("--columns", help="Number of columns in plot")
+    parser.add_argument("--output_filename", help="What to call the output files")
     args = parser.parse_args()
 
     if args.rm_prefix is None:
@@ -85,6 +87,9 @@ def main():
 
     if not args.channels:
         args.channels = -1
+
+    if args.columns is None:
+        args.columns = 3
 
     if not args.file:
         print("Need to specify file")
@@ -122,7 +127,9 @@ def main():
 
     print(f"Prescaler: {prescaler}\nTrigger: {trigger}\nChannels: {channels}\n")
 
-    tempfilename = os.getcwd() + "/tmp.txt"
+    if (not args.output_filename):
+        args.output_filename = "tmp"
+    tempfilename = os.getcwd() + F"/{args.output_filename}.txt"
 
     with open(tempfilename, "w", encoding="UTF-8") as file:
         for index, line in enumerate(samples):
@@ -145,10 +152,14 @@ def main():
         else:
             save_raw(args.save_raw)
 
-    command = ['kst2', tempfilename, '-n', str(args.samples), '-m', "3"] + channels
+    command = ['kst2', tempfilename, '-n', str(args.samples), '-m', args.columns] + channels
 
     if (args.save_pdf):
-        path, file = os.path.split(args.file)
+        if (args.output_filename):
+            path, file = os.path.split(args.output_filename)
+        else:
+            path, file = os.path.split(args.file)
+
         if (args.save_pdf == True):
             if ("." in file):
                 if (args.verbose):
