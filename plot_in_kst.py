@@ -74,6 +74,7 @@ def main():
     parser.add_argument("--rm_prefix", help="Remove prefix from dump, \"eg BD: \"")
     parser.add_argument("--columns", help="Number of columns in plot")
     parser.add_argument("--output_filename", help="What to call the output files")
+    parser.add_argument("--time_included", action='store_true', help="Is the first column timestams")
     args = parser.parse_args()
 
     if args.rm_prefix is None:
@@ -89,13 +90,13 @@ def main():
         args.channels = -1
 
     if args.columns is None:
-        args.columns = 3
+        args.columns = "3"
 
     if not args.file:
         print("Need to specify file")
         return
 
-    with open(args.file, 'r', encoding="UTF-8") as file:
+    with open(args.file, 'r', encoding="UTF-8", errors='ignore') as file:
         data = tail(file, int(args.samples) + 30) # Add some extra lines for trace metadata and newlines after trace dump
 
     # Find index where trace dump occurs
@@ -111,7 +112,11 @@ def main():
     prescaler = int(data[prescaler_start_index].strip().replace(args.rm_prefix+"trace prescaler ", ""))
     trigger = data[prescaler_start_index + 1].strip().replace(args.rm_prefix, "")
     channels = data[prescaler_start_index + 2].strip().replace(args.rm_prefix, "")
+    print(channels)
     channel_names = channels.replace(args.rm_prefix, "").split(" ")
+    if args.time_included:
+        channel_names.remove(channel_names[0])
+
     if int(args.channels) < 0:
         args.channels = len(channel_names) - channel_names.count("unknown")
 
@@ -120,8 +125,6 @@ def main():
     samples_no_prefix = []
     for index, line in enumerate(samples):
         samples_no_prefix.append(line.replace(args.rm_prefix, ""))
-
-
 
     samples = samples_no_prefix
 
@@ -134,7 +137,10 @@ def main():
     with open(tempfilename, "w", encoding="UTF-8") as file:
         for index, line in enumerate(samples):
             if line != '\n':
-                file.write(str(index * prescaler / int(args.sampling_freq)) + " " + line)
+                if args.time_included:
+                    file.write(line)
+                else:
+                    file.write(str(index * prescaler / int(args.sampling_freq)) + " " + line)
 
     channels = ['-x', '1']
     for index in range(0, int(args.channels)):
@@ -159,6 +165,9 @@ def main():
             path, file = os.path.split(args.output_filename)
         else:
             path, file = os.path.split(args.file)
+
+        # Convert to absolute path
+        path = os.path.abspath(path)
 
         if (args.save_pdf == True):
             if ("." in file):
